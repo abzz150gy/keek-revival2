@@ -1,38 +1,37 @@
 const express = require('express');
 const app = express();
 
-// 1. أهم سطر: تخطي صفحة تحذير Localtonet تلقائياً
 app.use((req, res, next) => {
+    // تنظيف الروابط من الشرطات الزائدة تلقائياً
+    req.url = req.url.replace(/\/+/g, '/');
     res.setHeader('localtonet-skip-warning', 'true');
-    // السماح لكل الأجهزة بالاتصال (CORS)
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    console.log(`[${new Date().toLocaleTimeString()}] Request: ${req.method} ${req.url}`);
     next();
 });
 
-app.use(express.json());
-
-// 2. مسار افتراضي للتأكد أن السيرفر شغال (الرابط الرئيسي)
-app.get('/', (req, res) => {
-    res.send('<h1>Keek Revival Server is Running!</h1><p>Status: Active</p>');
-});
-
-// 3. مسار تجريبي للتطبيق (مثال للـ API اللي يطلبها كيك)
-// عدل هذه المسارات حسب ما يطلبه تطبيق كيك 2.7.2 في الـ Logs
+// مسار الكونفيج (أهم مسار يطلبه التطبيق أول ما يفتح)
 app.get('/api/v2/config', (req, res) => {
     res.json({
-        status: "success",
-        message: "Connected to Keek Revival"
+        "status": "success",
+        "data": {
+            "api_version": "2.0",
+            "maintenance_mode": false,
+            "latest_version": "2.7.2"
+        }
     });
 });
 
-// 4. إعداد البورت (يقرأ من النظام أو يستخدم 3000)
-const PORT = process.env.PORT || 3000;
+// مسار التحقق من النظام
+app.get('/system/status', (req, res) => {
+    res.json({ "status": "ok" });
+});
 
-// 5. التشغيل على 0.0.0.0 ضروري لـ Localtonet و الـ IP المحلي
+// الرد الافتراضي لأي مسار آخر عشان ما يعطي 404
+app.use((req, res) => {
+    res.status(200).json({ "status": "success", "message": "Keek Server Active" });
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`-----------------------------------------`);
-    console.log(`✅ Keek Server is LIVE on Port: ${PORT}`);
-    console.log(`🔗 Local Link: http://localhost:${PORT}`);
-    console.log(`📡 Use this in Smali: http://YOUR_IP_OR_TUNNEL_URL`);
-    console.log(`-----------------------------------------`);
+    console.log(`✅ Keek Server Ready on Port ${PORT}`);
 });
