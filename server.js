@@ -2,10 +2,8 @@ const express = require('express');
 const app = express();
 
 app.use((req, res, next) => {
-    // تنظيف الروابط من الشرطات الزائدة تلقائياً
-    req.url = req.url.replace(/\/+/g, '/');
     res.setHeader('localtonet-skip-warning', 'true');
-    console.log(`[${new Date().toLocaleTimeString()}] Request: ${req.method} ${req.url}`);
+    res.setHeader('Bypass-Tunnel-Reminder', 'true'); // زيادة احتياط
     next();
 });
 
